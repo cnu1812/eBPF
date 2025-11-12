@@ -1,0 +1,17 @@
+<html>
+  <head>
+    <title>Real-Time eBPF Profile</title>
+    <meta http-equiv="refresh" content="2">
+  </head>
+  <body style="font-family: sans-serif; background-color: #222; color: #eee;">
+    <h1>&#128293; Live eBPF CPU Profile of 'slow_app.py'</h1>
+    <p>Updating every 2 seconds... (Last update: <span id="time"></span>)</p>
+    
+    <object id="flamegraph" data="profile.svg" type="image/svg+xml" width="100%" height="80%"></object>
+    
+    <script>
+      // Small script to show the update time, proving it's live
+      document.getElementById('time').innerText = new Date().toLocaleTimeString();
+    </script>
+  </body>
+</html>

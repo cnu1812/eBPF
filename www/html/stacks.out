@@ -1,0 +1,31 @@
+Attaching 2 probes...
+@stacks[
+        0xe90a1421542c
+        0xe90a14207d50
+        __poll+128
+        0x61d438
+        _PyEval_EvalFrameDefault+3336
+        PyEval_EvalCode+188
+        0x678c38
+        0x6749a4
+        0x698a7c
+        0x6983c8
+        0x698160
+        Py_RunMain+700
+]: 1
+
+
+@stacks[
+        0xe90a1421542c
+        0xe90a14207d50
+        __poll+128
+        0x61d438
+        _PyEval_EvalFrameDefault+3336
+        PyEval_EvalCode+188
+        0x678c38
+        0x6749a4
+        0x698a7c
+        0x6983c8
+        0x698160
+        Py_RunMain+700
+]: 1
