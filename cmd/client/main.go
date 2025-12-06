@@ -4,68 +4,75 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"io"
+	"math/rand"
 	"time"
 
 	"github.com/quic-go/quic-go"
 )
 
 func main() {
+	fmt.Println("🚦 REALISTIC TRAFFIC SIMULATION ENGINE")
+	fmt.Println("   [Blue] Legitimate Users (Browsing...)")
+	fmt.Println("   [Red]  DDoS Botnet (Blocked by XDP)")
+
 	tlsConf := &tls.Config{
 		InsecureSkipVerify: true,
 		NextProtos:         []string{"quic-echo-example"},
 	}
 
-	fmt.Println("Dialing QUIC connection...")
-	// Dial a raw QUIC connection (bypass HTTP/3 to ensure single connection)
-	conn, err := quic.DialAddr(context.Background(), "localhost:4242", tlsConf, nil)
-	if err != nil {
-		panic(err)
+	// Initial burst to populate the dashboard
+	for i := 0; i < 3; i++ {
+		go simulateUser(tlsConf, false)
 	}
+
+	for {
+		// 1. Legitimate Traffic (Randomized)
+		// Real users don't arrive like a metronome.
+		if rand.Float32() < 0.6 {
+			go simulateUser(tlsConf, false)
+		}
+
+		// 2. Attack Vectors (Bursts)
+		// Attacks usually come in waves.
+		if rand.Float32() < 0.15 {
+			// Spawn a small "botnet" of 3 bad requests at once
+			for i := 0; i < 3; i++ {
+				go simulateUser(tlsConf, true)
+			}
+		}
+
+		// Slower loop for realism (Human timescale)
+		time.Sleep(time.Duration(rand.Intn(800)+400) * time.Millisecond)
+	}
+}
+
+func simulateUser(tlsConf *tls.Config, isMalicious bool) {
+	// Good users stay connected longer (reading the page)
+	duration := 15 * time.Second
+	if isMalicious {
+		duration = 2 * time.Second
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), duration)
+	defer cancel()
+
+	conn, err := quic.DialAddr(ctx, "localhost:4242", tlsConf, nil)
+	if err != nil { return } // XDP blocked handshake
 	defer conn.CloseWithError(0, "bye")
 
-	// --- REQUEST 1: Trigger Ban ---
-	fmt.Println(">> Opening Stream 1 (Trigger Ban)...")
-	stream1, err := conn.OpenStreamSync(context.Background())
-	if err != nil {
-		panic(err)
-	}
-	
-	// Send "BAN" command
-	stream1.Write([]byte("BAN"))
-	stream1.Close() // Close write side to signal EOF
+	stream, err := conn.OpenStreamSync(ctx)
+	if err != nil { return }
 
-	// Read response
-	buf, _ := io.ReadAll(stream1)
-	fmt.Printf("Server Response 1: %s\n", string(buf))
-
-	// Wait for Uprobe to sync to Kernel Map
-	fmt.Println(">> Waiting for Ban to take effect...")
-	time.Sleep(1 * time.Second)
-
-	// --- REQUEST 2: Should Fail ---
-	fmt.Println(">> Opening Stream 2 (Should Fail)...")
-	
-	// If XDP works, this OpenStream (or the Write) will timeout/fail
-	// because packets are dropping.
-	stream2, err := conn.OpenStreamSync(context.Background())
-	if err != nil {
-		fmt.Println("SUCCESS: Connection blocked by XDP! (OpenStream failed)", err)
-		return
-	}
-
-	_, err = stream2.Write([]byte("DATA"))
-	if err != nil {
-		fmt.Println("SUCCESS: Connection blocked by XDP! (Write failed)", err)
-		return
-	}
-
-	// Try to read
-	stream2.SetReadDeadline(time.Now().Add(2 * time.Second))
-	_, err = io.ReadAll(stream2)
-	if err != nil {
-		fmt.Println("SUCCESS: Connection blocked by XDP! (Read Timeout)", err)
+	if isMalicious {
+		// --- ATTACK ---
+		stream.Write([]byte("BAN"))
+		time.Sleep(100 * time.Millisecond)
+		// The attack payload
+		stream.Write([]byte("DDoS_PAYLOAD_XXXXXXXX")) 
 	} else {
-		fmt.Println("FAIL: Stream 2 succeeded (XDP didn't drop it)")
+		// --- NORMAL USER ---
+		stream.Write([]byte("GET /index.html"))
+		// Simulate reading time
+		time.Sleep(time.Duration(rand.Intn(5)+3) * time.Second)
 	}
 }
