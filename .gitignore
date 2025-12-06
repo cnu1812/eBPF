@@ -1,0 +1,13 @@
+# Binaries
+server_bin
+loader_bin
+
+# Generated BPF artifacts
+cmd/loader/bpf_bpfel.go
+cmd/loader/bpf_bpfel.o
+cmd/loader/bpf_bpfeb.go
+cmd/loader/bpf_bpfeb.o
+
+# Go
+vendor/
+go.sum
