@@ -23,4 +23,4 @@ def slow_route():
 
 if __name__ == '__main__':
     # Important: 'debug=False' ensures it runs in a single, profile-able process
-    app.run(debug=False, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='127.0.0.1', port=5000)
