@@ -14,6 +14,7 @@ A lightweight, zero-instrumentation CPU profiler for Python applications. It use
 2. Clone the Repo
     ```
     git clone https://github.com/cnu1812/eBPF.git
+    git submodule update --init --recursive
     cd ebpf
     ```
 
@@ -21,7 +22,9 @@ A lightweight, zero-instrumentation CPU profiler for Python applications. It use
 
 - Terminal 1 (Target App):
 
-    `python3 slow_app.py`
+    ```
+    python3 slow_app.py
+    ```
 
     ![T1](https://github.com/user-attachments/assets/eeccb85b-b952-48dc-b0e0-b27fae4832be)
 
@@ -38,14 +41,18 @@ A lightweight, zero-instrumentation CPU profiler for Python applications. It use
 
 - Terminal 3 (Dashboard):
 
-    `python3 -m http.server --directory ./www/html 8080`
+    ```
+    python3 -m http.server --directory ./www/html 8080
+    ```
 
   ![T3](https://github.com/user-attachments/assets/97dbf968-ec05-4c8d-9775-759ff896c6a4)
 
 
 4. View the Dashboard Open `http://localhost:8080` in your browser. Generate load in a 4th terminal to see the graph populate:
 
-    `ab -n 100 -c 10 http://127.0.0.1:5000/slow`
+    ```
+    ab -n 100 -c 10 http://127.0.0.1:5000/slow
+    ```
 
    ![T4](https://github.com/user-attachments/assets/c027bfcf-7fb6-4df1-9a9e-e95efe631341)
 
